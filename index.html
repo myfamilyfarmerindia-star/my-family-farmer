@@ -1,0 +1,2082 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>My Family Farmer — Interactive Product Prototype & Command Center</title>
+<style>
+  :root {
+    --forest: #12291d;
+    --forest-mid: #1c3d2b;
+    --forest-light: #27533b;
+    --cream: #faf6ed;
+    --cream-2: #f2ead9;
+    --cream-3: #e7dcc5;
+    --terracotta: #c85a32;
+    --terracotta-dark: #a64420;
+    --gold: #dfa038;
+    --gold-soft: #fdf2d6;
+    --emerald: #268754;
+    --emerald-soft: #e2f5ea;
+    --ink: #1a241d;
+    --muted: #5c6b60;
+    --border: rgba(26, 36, 29, 0.11);
+    --shadow-sm: 0 4px 14px rgba(18, 41, 29, 0.06);
+    --shadow-md: 0 12px 32px rgba(18, 41, 29, 0.12);
+    --shadow-lg: 0 24px 60px rgba(10, 25, 17, 0.24);
+    --serif: Georgia, 'Palatino Linotype', 'Book Antiqua', serif;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    font-family: var(--sans);
+    background: radial-gradient(circle at 15% 10%, #234733 0%, #12261b 45%, #0c1a12 100%);
+    color: var(--ink);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Subtle organic grain overlay */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.04;
+    background-image: radial-gradient(#ffffff 1px, transparent 1px);
+    background-size: 18px 18px;
+    z-index: 0;
+  }
+
+  .studio-shell {
+    position: relative;
+    z-index: 1;
+    max-width: 1420px;
+    margin: 0 auto;
+    padding: 18px 20px 40px;
+  }
+
+  /* Top Studio Header */
+  .studio-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 14px 20px;
+    background: rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 20px;
+    margin-bottom: 20px;
+    color: #fff;
+  }
+
+  .brand-lockup {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .brand-mark {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--gold), var(--terracotta));
+    display: grid;
+    place-items: center;
+    box-shadow: 0 6px 18px rgba(200, 90, 50, 0.35);
+    flex-shrink: 0;
+  }
+
+  .brand-title {
+    font-family: var(--serif);
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: #fff;
+  }
+
+  .brand-sub {
+    font-size: 0.76rem;
+    color: rgba(255, 255, 255, 0.72);
+    margin-top: 2px;
+  }
+
+  .role-switcher {
+    display: flex;
+    background: rgba(0, 0, 0, 0.28);
+    padding: 5px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  .role-btn {
+    border: none;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.76);
+    padding: 9px 16px;
+    border-radius: 10px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.22s ease;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .role-btn:hover { color: #fff; background: rgba(255, 255, 255, 0.08); }
+  .role-btn.active {
+    background: var(--cream);
+    color: var(--forest);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .pill-action {
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    padding: 8px 13px;
+    border-radius: 10px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .pill-action:hover { background: rgba(255, 255, 255, 0.2); transform: translateY(-1px); }
+  .pill-action.highlight {
+    background: linear-gradient(135deg, var(--gold), #c98622);
+    color: #16241b;
+    border-color: transparent;
+  }
+
+  /* Main Workspace Stage */
+  .stage-grid {
+    display: grid;
+    grid-template-columns: 430px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .stage-grid.wide-mode {
+    grid-template-columns: 1fr;
+  }
+
+  @media (max-width: 1040px) {
+    .stage-grid { grid-template-columns: 1fr; }
+  }
+
+  /* Realistic Phone Frame */
+  .phone-wrap {
+    display: flex;
+    justify-content: center;
+  }
+
+  .phone-bezel {
+    width: 100%;
+    max-width: 416px;
+    height: 820px;
+    background: #0f1612;
+    border-radius: 46px;
+    padding: 12px;
+    box-shadow:
+      0 30px 70px rgba(0, 0, 0, 0.55),
+      inset 0 0 0 2px rgba(255, 255, 255, 0.16);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .phone-screen {
+    flex: 1;
+    background: var(--cream);
+    border-radius: 36px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  /* Dynamic Island & Status Bar */
+  .status-bar {
+    height: 36px;
+    padding: 8px 22px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--ink);
+    background: transparent;
+    flex-shrink: 0;
+    z-index: 10;
+  }
+
+  .status-bar.dark { color: #fff; background: var(--forest); }
+
+  .dynamic-island {
+    width: 96px;
+    height: 22px;
+    background: #0d130f;
+    border-radius: 99px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 8px;
+  }
+
+  .island-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #1f4d35;
+    box-shadow: 0 0 6px #37b26c;
+  }
+
+  /* App Scroll Viewport */
+  .app-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 16px 86px;
+    scroll-behavior: smooth;
+  }
+
+  .app-scroll::-webkit-scrollbar { width: 4px; }
+  .app-scroll::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.14); border-radius: 99px; }
+
+  /* Bottom Navigation inside Phone */
+  .bottom-nav {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 70px;
+    background: rgba(250, 246, 237, 0.94);
+    backdrop-filter: blur(14px);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 4px 6px 10px;
+    z-index: 20;
+  }
+
+  .nav-item {
+    border: none;
+    background: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 5px 8px;
+    border-radius: 12px;
+    transition: all 0.2s;
+  }
+
+  .nav-item.active {
+    color: var(--forest);
+    background: rgba(38, 135, 84, 0.11);
+  }
+
+  .nav-item svg { width: 20px; height: 20px; }
+
+  /* UI Components inside App */
+  .app-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .greeting-small {
+    font-size: 0.72rem;
+    color: var(--muted);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .greeting-title {
+    font-family: var(--serif);
+    font-size: 1.32rem;
+    font-weight: 700;
+    color: var(--forest);
+    line-height: 1.15;
+  }
+
+  .badge-drop {
+    background: var(--emerald-soft);
+    color: var(--emerald);
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 5px 9px;
+    border-radius: 99px;
+    border: 1px solid rgba(38, 135, 84, 0.22);
+    white-space: nowrap;
+  }
+
+  /* Hero Grain Bank Card */
+  .grain-bank-card {
+    background: linear-gradient(145deg, var(--forest) 0%, #1d432e 65%, #244f37 100%);
+    color: #fff;
+    border-radius: 22px;
+    padding: 18px;
+    box-shadow: var(--shadow-md);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+
+  .grain-bank-card::after {
+    content: "";
+    position: absolute;
+    width: 170px;
+    height: 170px;
+    right: -45px;
+    top: -45px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(223, 160, 56, 0.24), transparent 70%);
+    pointer-events: none;
+  }
+
+  .gb-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+
+  .gb-kicker {
+    font-size: 0.67rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--gold);
+    font-weight: 700;
+  }
+
+  .gb-title {
+    font-family: var(--serif);
+    font-size: 1.12rem;
+    font-weight: 700;
+    margin-top: 2px;
+  }
+
+  .gb-pill {
+    background: rgba(255, 255, 255, 0.14);
+    padding: 4px 10px;
+    border-radius: 99px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  .gb-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .gb-meter {
+    background: rgba(255, 255, 255, 0.09);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    padding: 9px 10px;
+  }
+
+  .gb-meter-head {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+  }
+
+  .gb-bar {
+    height: 5px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-bottom: 4px;
+  }
+
+  .gb-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), #f3c46b);
+    border-radius: 99px;
+  }
+
+  .gb-meta {
+    font-size: 0.63rem;
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .gb-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+  }
+
+  .gb-countdown {
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.3;
+  }
+
+  .btn-gold {
+    border: none;
+    background: linear-gradient(135deg, var(--gold), #cc8721);
+    color: #15241a;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 8px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: transform 0.15s;
+  }
+
+  .btn-gold:hover { transform: scale(1.03); }
+
+  /* Living Proof Strip */
+  .proof-strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .proof-chip {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 9px 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .proof-chip:hover {
+    border-color: var(--emerald);
+    transform: translateY(-2px);
+  }
+
+  .proof-icon { font-size: 1.15rem; margin-bottom: 3px; }
+  .proof-label { font-size: 0.67rem; font-weight: 700; color: var(--forest); line-height: 1.2; }
+  .proof-sub { font-size: 0.6rem; color: var(--emerald); font-weight: 600; margin-top: 2px; }
+
+  /* Section Headings */
+  .sec-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 14px 0 9px;
+  }
+
+  .sec-title {
+    font-family: var(--serif);
+    font-size: 1.02rem;
+    font-weight: 700;
+    color: var(--forest);
+  }
+
+  .sec-link {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--terracotta);
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+
+  /* Story / Update Cards */
+  .story-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 13px;
+    margin-bottom: 11px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .story-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .farmer-mini {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+
+  .avatar-svg {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .farmer-name { font-size: 0.82rem; font-weight: 700; color: var(--ink); }
+  .farmer-loc { font-size: 0.68rem; color: var(--muted); }
+
+  .tag-verified {
+    background: var(--emerald-soft);
+    color: var(--emerald);
+    font-size: 0.64rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 99px;
+  }
+
+  .tag-transition {
+    background: var(--gold-soft);
+    color: #9b610a;
+    font-size: 0.64rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 99px;
+  }
+
+  .story-body {
+    font-size: 0.78rem;
+    color: #313d34;
+    line-height: 1.45;
+    margin-bottom: 9px;
+  }
+
+  /* Voice Note Widget */
+  .voice-player {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--cream-2);
+    border-radius: 12px;
+    padding: 8px 10px;
+  }
+
+  .play-circle {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: none;
+    background: var(--terracotta);
+    color: #fff;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    font-size: 0.72rem;
+  }
+
+  .waveform {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 2.5px;
+    height: 22px;
+  }
+
+  .wave-bar {
+    flex: 1;
+    background: rgba(200, 90, 50, 0.32);
+    border-radius: 99px;
+    transition: height 0.2s, background 0.2s;
+  }
+
+  .voice-player.playing .wave-bar {
+    background: var(--terracotta);
+    animation: pulseWave 0.7s infinite alternate ease-in-out;
+  }
+
+  @keyframes pulseWave {
+    from { transform: scaleY(0.45); }
+    to { transform: scaleY(1.25); }
+  }
+
+  /* Filter Pills */
+  .filter-scroll {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    margin-bottom: 10px;
+  }
+
+  .filter-scroll::-webkit-scrollbar { display: none; }
+
+  .chip-filter {
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 99px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.18s;
+  }
+
+  .chip-filter.active {
+    background: var(--forest);
+    color: #fff;
+    border-color: var(--forest);
+  }
+
+  /* Product Cards */
+  .product-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 12px;
+    margin-bottom: 10px;
+    display: flex;
+    gap: 11px;
+    align-items: center;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .prod-art {
+    width: 64px;
+    height: 64px;
+    border-radius: 14px;
+    background: var(--cream-2);
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .prod-info { flex: 1; min-width: 0; }
+  .prod-title { font-size: 0.84rem; font-weight: 700; color: var(--ink); }
+  .prod-origin { font-size: 0.68rem; color: var(--muted); margin: 2px 0 5px; }
+
+  .prod-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 6px;
+  }
+
+  .mini-pill {
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: var(--cream-2);
+    color: var(--forest-mid);
+  }
+
+  .prod-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .prod-price { font-size: 0.88rem; font-weight: 800; color: var(--forest); }
+  .prod-unit { font-size: 0.68rem; font-weight: 500; color: var(--muted); }
+
+  .qty-ctrl {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn-add {
+    border: none;
+    background: var(--forest);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 9px;
+    cursor: pointer;
+  }
+
+  .btn-qty {
+    width: 24px;
+    height: 24px;
+    border-radius: 7px;
+    border: 1px solid var(--border);
+    background: var(--cream);
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  /* Floating Cart Bar */
+  .cart-float {
+    position: sticky;
+    bottom: 6px;
+    background: var(--forest);
+    color: #fff;
+    border-radius: 16px;
+    padding: 11px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--shadow-md);
+    margin-top: 10px;
+  }
+
+  /* QR Scanner Box */
+  .qr-stage {
+    background: linear-gradient(155deg, #102419, #1b3b2a);
+    color: #fff;
+    border-radius: 22px;
+    padding: 18px;
+    text-align: center;
+    margin-bottom: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .qr-frame {
+    width: 150px;
+    height: 150px;
+    margin: 10px auto 14px;
+    background: #fff;
+    border-radius: 16px;
+    padding: 12px;
+    position: relative;
+    display: grid;
+    place-items: center;
+  }
+
+  .scan-laser {
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #39e58c, transparent);
+    box-shadow: 0 0 12px #39e58c;
+    top: 20%;
+    animation: scanMove 2.1s infinite ease-in-out;
+  }
+
+  @keyframes scanMove {
+    0% { top: 12%; }
+    50% { top: 85%; }
+    100% { top: 12%; }
+  }
+
+  .lab-report-card {
+    background: #fff;
+    border: 1px solid rgba(38, 135, 84, 0.28);
+    border-radius: 18px;
+    padding: 14px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .lab-pass-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--emerald-soft);
+    color: var(--emerald);
+    padding: 9px 12px;
+    border-radius: 12px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    margin-bottom: 11px;
+  }
+
+  .trace-step {
+    display: flex;
+    gap: 10px;
+    padding: 7px 0;
+    border-left: 2px dashed rgba(38, 135, 84, 0.3);
+    margin-left: 8px;
+    padding-left: 14px;
+    position: relative;
+  }
+
+  .trace-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--emerald);
+    position: absolute;
+    left: -6px;
+    top: 10px;
+  }
+
+  /* Farmer App Big Buttons */
+  .farmer-hero {
+    background: linear-gradient(135deg, #b84c24, #d97828);
+    color: #fff;
+    border-radius: 22px;
+    padding: 16px;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow-md);
+  }
+
+  .big-action-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .big-farmer-btn {
+    border: 1px solid var(--border);
+    background: #fff;
+    border-radius: 18px;
+    padding: 15px 10px;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s;
+  }
+
+  .big-farmer-btn:hover { transform: translateY(-2px); border-color: var(--terracotta); }
+  .big-farmer-btn .ico { font-size: 1.7rem; margin-bottom: 5px; display: block; }
+  .big-farmer-btn .lbl { font-size: 0.82rem; font-weight: 800; color: var(--ink); display: block; }
+  .big-farmer-btn .sub { font-size: 0.67rem; color: var(--muted); display: block; margin-top: 2px; }
+
+  /* Right Side: Feature Spotlight / Architecture Panel */
+  .spotlight-panel {
+    background: rgba(250, 246, 237, 0.97);
+    border-radius: 28px;
+    padding: 26px;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+  }
+
+  .spot-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--emerald-soft);
+    color: var(--emerald);
+    font-size: 0.74rem;
+    font-weight: 800;
+    padding: 5px 12px;
+    border-radius: 99px;
+    margin-bottom: 10px;
+  }
+
+  .spot-title {
+    font-family: var(--serif);
+    font-size: 1.75rem;
+    color: var(--forest);
+    line-height: 1.18;
+    margin-bottom: 8px;
+  }
+
+  .spot-desc {
+    font-size: 0.92rem;
+    color: var(--muted);
+    line-height: 1.55;
+    margin-bottom: 20px;
+  }
+
+  .feature-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 13px;
+    margin-bottom: 20px;
+  }
+
+  @media (max-width: 720px) {
+    .feature-cards-grid { grid-template-columns: 1fr; }
+  }
+
+  .f-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 15px;
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .f-card:hover {
+    border-color: var(--terracotta);
+    transform: translateY(-2px);
+  }
+
+  .f-card-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 7px;
+  }
+
+  .f-ico {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: var(--cream-2);
+    display: grid;
+    place-items: center;
+    font-size: 1.05rem;
+  }
+
+  .f-card h4 { font-size: 0.9rem; color: var(--forest); font-weight: 800; }
+  .f-card p { font-size: 0.78rem; color: var(--muted); line-height: 1.45; }
+
+  /* Admin Control Tower (Full Width Mode) */
+  .admin-dashboard {
+    background: var(--cream);
+    border-radius: 28px;
+    padding: 26px;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+
+  .kpi-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 16px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .kpi-label { font-size: 0.74rem; font-weight: 700; color: var(--muted); }
+  .kpi-val { font-family: var(--serif); font-size: 1.6rem; font-weight: 700; color: var(--forest); margin: 4px 0; }
+  .kpi-delta { font-size: 0.72rem; font-weight: 700; color: var(--emerald); }
+
+  .admin-cols {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 20px;
+  }
+
+  @media (max-width: 960px) {
+    .admin-cols { grid-template-columns: 1fr; }
+  }
+
+  .panel-box {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .slider-group { margin-bottom: 14px; }
+  .slider-head {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.82rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+    color: var(--forest);
+  }
+
+  input[type="range"] {
+    width: 100%;
+    accent-color: var(--terracotta);
+    cursor: pointer;
+  }
+
+  .econ-result-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+
+  .econ-tile {
+    background: var(--cream);
+    padding: 11px;
+    border-radius: 12px;
+  }
+
+  .econ-tile.profit {
+    background: linear-gradient(135deg, var(--forest), #214a33);
+    color: #fff;
+  }
+
+  .table-clean {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+  }
+
+  .table-clean th {
+    text-align: left;
+    color: var(--muted);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    padding: 8px 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .table-clean td {
+    padding: 10px 6px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    vertical-align: middle;
+  }
+
+  /* Modal / Toast */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 22, 15, 0.65);
+    backdrop-filter: blur(6px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 100;
+  }
+
+  .modal-backdrop.open { display: flex; }
+
+  .modal-card {
+    background: var(--cream);
+    max-width: 480px;
+    width: 100%;
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    animation: popIn 0.22s ease;
+  }
+
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(0.94) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(90px);
+    background: var(--forest);
+    color: #fff;
+    padding: 11px 20px;
+    border-radius: 99px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    z-index: 120;
+    transition: transform 0.28s cubic-bezier(.22, 1, .36, 1);
+  }
+
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="studio-shell">
+  <!-- TOP PROTOTYPE STUDIO HEADER -->
+  <header class="studio-header">
+    <div class="brand-lockup">
+      <div class="brand-mark">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22V12"/>
+          <path d="M12 12C12 7 7 4 3 4c0 5 3 8 9 8Z"/>
+          <path d="M12 15c0-4.5 4.5-7.5 9-7.5 0 4.5-3 7.5-9 7.5Z"/>
+          <circle cx="12" cy="4" r="1.5" fill="#fff"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-title">My Family Farmer</div>
+        <div class="brand-sub">Crops &amp; Desi Kitchen OS • Zero Vegetables • 72h Fresh-Milled &amp; Pressed</div>
+      </div>
+    </div>
+
+    <div class="role-switcher">
+      <button class="role-btn active" onclick="switchApp('family', this)">🏡 Family App</button>
+      <button class="role-btn" onclick="switchApp('farmer', this)">🌾 Farmer App (EN/हिन्दी)</button>
+      <button class="role-btn" onclick="switchApp('admin', this)">⚡ Admin Control Tower</button>
+    </div>
+
+    <div class="header-actions">
+      <button class="pill-action" onclick="quickJumpQR()">🔍 Instant QR Scan Demo</button>
+      <button class="pill-action highlight" onclick="openModal('archModal')">📐 App Architecture &amp; USP</button>
+    </div>
+  </header>
+
+  <!-- MAIN STAGE: FAMILY / FARMER PHONE + SPOTLIGHT -->
+  <main id="mobileStage" class="stage-grid">
+    <!-- LEFT: INTERACTIVE MOBILE APP -->
+    <div class="phone-wrap">
+      <div class="phone-bezel">
+        <div class="phone-screen" id="phoneScreen">
+          <!-- Status Bar -->
+          <div class="status-bar" id="phoneStatusBar">
+            <span>9:41</span>
+            <div class="dynamic-island"><div class="island-dot"></div></div>
+            <span>5G • 94%</span>
+          </div>
+
+          <!-- ==================== FAMILY APP ==================== -->
+          <div id="familyAppViewport" class="app-scroll">
+            <!-- TAB 1: HOME / MY HARVEST -->
+            <div id="fam-home" class="fam-tab">
+              <div class="app-header-row">
+                <div>
+                  <div class="greeting-small">📍 Prestige Shantiniketan • Drop #14</div>
+                  <div class="greeting-title">Namaste, Sharma Family</div>
+                </div>
+                <span class="badge-drop">Sun 7:00 AM Drop</span>
+              </div>
+
+              <!-- UNIQUE FEATURE 1: MY FAMILY GRAIN BANK -->
+              <div class="grain-bank-card">
+                <div class="gb-top">
+                  <div>
+                    <div class="gb-kicker">Vault • Hermetic Zero-Fumigation</div>
+                    <div class="gb-title">Your Family Grain Bank</div>
+                  </div>
+                  <span class="gb-pill">2026–27 Quota</span>
+                </div>
+
+                <div class="gb-grid">
+                  <div class="gb-meter">
+                    <div class="gb-meter-head"><span>Khapli Wheat</span><span>18.5 kg</span></div>
+                    <div class="gb-bar"><div class="gb-fill" style="width:74%"></div></div>
+                    <div class="gb-meta">Ramkishan • Sehore, MP</div>
+                  </div>
+                  <div class="gb-meter">
+                    <div class="gb-meter-head"><span>Kala Namak Rice</span><span>11.0 kg</span></div>
+                    <div class="gb-bar"><div class="gb-fill" style="width:62%"></div></div>
+                    <div class="gb-meta">Harish • Siddharthnagar</div>
+                  </div>
+                  <div class="gb-meter">
+                    <div class="gb-meter-head"><span>Mustard Oil</span><span>4.2 L</span></div>
+                    <div class="gb-bar"><div class="gb-fill" style="width:55%"></div></div>
+                    <div class="gb-meta">Bhawani • Alwar, RJ</div>
+                  </div>
+                  <div class="gb-meter">
+                    <div class="gb-meter-head"><span>A2 Bilona Ghee</span><span>1.4 kg</span></div>
+                    <div class="gb-bar"><div class="gb-fill" style="width:82%"></div></div>
+                    <div class="gb-meta">Meera Devi • Anand, GJ</div>
+                  </div>
+                </div>
+
+                <div class="gb-footer">
+                  <div class="gb-countdown">
+                    <strong>Stone-Milling in 38 hrs</strong><br/>
+                    5 kg fresh atta + 1L cold-pressed oil queued
+                  </div>
+                  <button class="btn-gold" onclick="triggerFreshMill()">Customize Grind</button>
+                </div>
+              </div>
+
+              <!-- UNIQUE FEATURE 2: LIVING PROOF STRIP -->
+              <div class="proof-strip">
+                <div class="proof-chip" onclick="openProof('bee')">
+                  <div class="proof-icon">🐝</div>
+                  <div class="proof-label">Live Beehives</div>
+                  <div class="proof-sub">Zero-Spray Proof</div>
+                </div>
+                <div class="proof-chip" onclick="openProof('lab')">
+                  <div class="proof-icon">🧪</div>
+                  <div class="proof-label">NABL 0 / 220</div>
+                  <div class="proof-sub">Residue Free</div>
+                </div>
+                <div class="proof-chip" onclick="openProof('cow')">
+                  <div class="proof-icon">🐄</div>
+                  <div class="proof-label">Desi Jeevamrit</div>
+                  <div class="proof-sub">Soil C: 0.84%</div>
+                </div>
+              </div>
+
+              <div class="sec-head">
+                <div class="sec-title">Live From Your Farms</div>
+                <button class="sec-link" onclick="switchFamTab('farmer')">All 3 Farmers →</button>
+              </div>
+
+              <!-- STORY 1 WITH VOICE NOTE -->
+              <div class="story-card">
+                <div class="story-head">
+                  <div class="farmer-mini">
+                    <div class="avatar-svg" style="background:#f5e6cf;">
+                      <svg viewBox="0 0 40 40"><circle cx="20" cy="15" r="7" fill="#8c5432"/><path d="M8 38c0-7 5-12 12-12s12 5 12 12" fill="#2c5e3f"/><path d="M11 11c2-5 16-5 18 0-3-2-15-2-18 0Z" fill="#e59a32"/></svg>
+                    </div>
+                    <div>
+                      <div class="farmer-name">Ramkishan Verma</div>
+                      <div class="farmer-loc">Sehore, MP • 2 hrs ago • Plot #A4</div>
+                    </div>
+                  </div>
+                  <span class="tag-verified">Certified PGS</span>
+                </div>
+                <div class="story-body">
+                  "Sun-dried your Khapli wheat down to 10.4% moisture and sealed 400 kg in hermetic bags. Zero chemical fumigation—sending 5 kg to the city stone-chakki tomorrow!"
+                </div>
+                <div class="voice-player" id="vp1">
+                  <button class="play-circle" onclick="toggleVoice('vp1', 'Ramkishan (Hindi): Namaste Sharma ji, aapka Khapli gehu taiyaar hai...')">▶</button>
+                  <div class="waveform">
+                    <div class="wave-bar" style="height:40%"></div><div class="wave-bar" style="height:80%"></div>
+                    <div class="wave-bar" style="height:55%"></div><div class="wave-bar" style="height:95%"></div>
+                    <div class="wave-bar" style="height:60%"></div><div class="wave-bar" style="height:85%"></div>
+                    <div class="wave-bar" style="height:45%"></div><div class="wave-bar" style="height:70%"></div>
+                    <div class="wave-bar" style="height:90%"></div><div class="wave-bar" style="height:50%"></div>
+                  </div>
+                  <span style="font-size:0.68rem;font-weight:700;color:var(--terracotta);">0:18</span>
+                </div>
+              </div>
+
+              <!-- STORY 2 -->
+              <div class="story-card">
+                <div class="story-head">
+                  <div class="farmer-mini">
+                    <div class="avatar-svg" style="background:#e3f0e5;">
+                      <svg viewBox="0 0 40 40"><circle cx="20" cy="15" r="7" fill="#945b38"/><path d="M8 38c0-7 5-12 12-12s12 5 12 12" fill="#c85a32"/><circle cx="20" cy="10" r="3" fill="#c85a32"/></svg>
+                    </div>
+                    <div>
+                      <div class="farmer-name">Meera Devi</div>
+                      <div class="farmer-loc">Anand Belt • Today 5:10 AM</div>
+                    </div>
+                  </div>
+                  <span class="tag-transition">Zaid + Allied</span>
+                </div>
+                <div class="story-body">
+                  "Morning Bilona churning complete from Gir cows fed on chemical-free mustard oilcake (Khal). 18 glass jars packed for Sunday Society Drop."
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB 2: PANTRY & ALL SEASONS CROPS -->
+            <div id="fam-pantry" class="fam-tab hidden">
+              <div class="app-header-row">
+                <div>
+                  <div class="greeting-small">Zero Vegetables • 100% Pantry &amp; Crops</div>
+                  <div class="greeting-title">Reserve &amp; Pre-Book</div>
+                </div>
+                <span class="badge-drop">30% Advance</span>
+              </div>
+
+              <div class="filter-scroll" id="seasonFilters">
+                <button class="chip-filter active" onclick="filterCrops('all', this)">All Crops</button>
+                <button class="chip-filter" onclick="filterCrops('Rabi', this)">Rabi (Winter)</button>
+                <button class="chip-filter" onclick="filterCrops('Kharif', this)">Kharif (Monsoon)</button>
+                <button class="chip-filter" onclick="filterCrops('Zaid', this)">Zaid (Summer)</button>
+                <button class="chip-filter" onclick="filterCrops('Orchard', this)">Annual &amp; Orchards</button>
+                <button class="chip-filter" onclick="filterCrops('Allied', this)">Ghee &amp; Honey</button>
+              </div>
+
+              <div id="cropListContainer"></div>
+
+              <div class="cart-float" id="cartFloat">
+                <div>
+                  <div style="font-size:0.7rem;opacity:0.8;" id="cartSummaryTop">2 items in Monthly Box</div>
+                  <div style="font-size:0.92rem;font-weight:800;" id="cartTotalText">₹2,140 • Advance: ₹642</div>
+                </div>
+                <button class="btn-gold" onclick="openCheckout()">Book Harvest →</button>
+              </div>
+            </div>
+
+            <!-- TAB 3: MY FARMER PROFILE -->
+            <div id="fam-farmer" class="fam-tab hidden">
+              <div class="app-header-row">
+                <div>
+                  <div class="greeting-small">Cluster #04 • Adopted Partner</div>
+                  <div class="greeting-title">Your Farmers</div>
+                </div>
+                <button class="btn-add" onclick="toast('Request sent to schedule Sunday Video Call!')">📹 Video Call</button>
+              </div>
+
+              <div class="grain-bank-card" style="background:linear-gradient(145deg,#2a442d,#182c1d);">
+                <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;">
+                  <div class="avatar-svg" style="width:54px;height:54px;background:#f5e6cf;">
+                    <svg viewBox="0 0 40 40"><circle cx="20" cy="15" r="7" fill="#8c5432"/><path d="M8 38c0-7 5-12 12-12s12 5 12 12" fill="#2c5e3f"/><path d="M11 11c2-5 16-5 18 0-3-2-15-2-18 0Z" fill="#e59a32"/></svg>
+                  </div>
+                  <div>
+                    <div style="font-family:var(--serif);font-size:1.1rem;font-weight:700;">Ramkishan Verma</div>
+                    <div style="font-size:0.74rem;opacity:0.84;">4.5 Acres • Sehore, MP • 12 Yrs Chemical-Free</div>
+                    <div style="font-size:0.68rem;color:var(--gold);font-weight:700;margin-top:2px;">★ 4.97 Family Trust Score (142 Families)</div>
+                  </div>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;">
+                  <div style="background:rgba(255,255,255,0.1);padding:8px;border-radius:10px;">
+                    <div style="font-size:0.9rem;font-weight:800;">0.84%</div>
+                    <div style="font-size:0.62rem;opacity:0.75;">Soil Carbon</div>
+                  </div>
+                  <div style="background:rgba(255,255,255,0.1);padding:8px;border-radius:10px;">
+                    <div style="font-size:0.9rem;font-weight:800;">15 m</div>
+                    <div style="font-size:0.62rem;opacity:0.75;">Napier Buffer</div>
+                  </div>
+                  <div style="background:rgba(255,255,255,0.1);padding:8px;border-radius:10px;">
+                    <div style="font-size:0.9rem;font-weight:800;">4 Hives</div>
+                    <div style="font-size:0.62rem;opacity:0.75;">Active Bees</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="sec-head"><div class="sec-title">Desi Crop Lifecycle Log</div></div>
+              <div class="story-card">
+                <div class="trace-step"><div class="trace-dot"></div><div><div style="font-size:0.78rem;font-weight:700;">Desi Open-Pollinated Sowing</div><div style="font-size:0.68rem;color:var(--muted);">Nov 12 • Bansi &amp; Khapli heirloom seed treated with Beejamrit</div></div></div>
+                <div class="trace-step"><div class="trace-dot"></div><div><div style="font-size:0.78rem;font-weight:700;">Soil Feeding (Jeevamrit #3)</div><div style="font-size:0.68rem;color:var(--muted);">Dec 28 • Fermented desi cow dung + urine + jaggery culture</div></div></div>
+                <div class="trace-step"><div class="trace-dot"></div><div><div style="font-size:0.78rem;font-weight:700;">Neemastra Natural Protection</div><div style="font-size:0.68rem;color:var(--muted);">Jan 19 • Zero synthetic fungicides or urea</div></div></div>
+                <div class="trace-step" style="border-left-color:transparent;"><div class="trace-dot" style="background:var(--gold);"></div><div><div style="font-size:0.78rem;font-weight:700;">Harvest &amp; NABL Lab Clearance</div><div style="font-size:0.68rem;color:var(--muted);">Mar 29 • 0/220 pesticides detected • Hermetic Seal #HM-884</div></div></div>
+              </div>
+
+              <div class="story-card" style="display:flex;align-items:center;justify-content:space-between;">
+                <div>
+                  <div style="font-size:0.82rem;font-weight:700;">Tip / Appreciate Ramkishan</div>
+                  <div style="font-size:0.68rem;color:var(--muted);">100% goes straight to his UPI within 48 hrs</div>
+                </div>
+                <button class="btn-add" onclick="toast('₹101 Harvest Gratitude sent to Ramkishan!')">Send ₹101</button>
+              </div>
+            </div>
+
+            <!-- TAB 4: QR TRACE & LAB VAULT -->
+            <div id="fam-qr" class="fam-tab hidden">
+              <div class="app-header-row">
+                <div>
+                  <div class="greeting-small">Batch-Level Transparency</div>
+                  <div class="greeting-title">QR Trace &amp; Lab Vault</div>
+                </div>
+              </div>
+
+              <div class="qr-stage">
+                <div style="font-size:0.72rem;color:var(--gold);font-weight:700;">SELECT BATCH TO SIMULATE SCAN</div>
+                <div class="qr-frame">
+                  <div class="scan-laser"></div>
+                  <svg width="118" height="118" viewBox="0 0 100 100" fill="#12291d">
+                    <rect x="6" y="6" width="26" height="26" rx="4" fill="none" stroke="#12291d" stroke-width="6"/>
+                    <rect x="14" y="14" width="10" height="10"/>
+                    <rect x="68" y="6" width="26" height="26" rx="4" fill="none" stroke="#12291d" stroke-width="6"/>
+                    <rect x="76" y="14" width="10" height="10"/>
+                    <rect x="6" y="68" width="26" height="26" rx="4" fill="none" stroke="#12291d" stroke-width="6"/>
+                    <rect x="14" y="76" width="10" height="10"/>
+                    <rect x="42" y="10" width="8" height="8"/><rect x="54" y="18" width="8" height="8"/>
+                    <rect x="40" y="38" width="18" height="18" rx="3" fill="#c85a32"/>
+                    <rect x="12" y="44" width="8" height="14"/><rect x="26" y="50" width="8" height="8"/>
+                    <rect x="68" y="44" width="10" height="10"/><rect x="84" y="54" width="10" height="14"/>
+                    <rect x="44" y="68" width="12" height="8"/><rect x="64" y="72" width="14" height="12"/><rect x="82" y="84" width="12" height="10"/>
+                  </svg>
+                </div>
+                <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;">
+                  <button class="btn-gold" onclick="loadLabBatch('wheat')">🌾 Khapli Atta #114</button>
+                  <button class="btn-gold" style="background:rgba(255,255,255,0.18);color:#fff;" onclick="loadLabBatch('honey')">🍯 Mustard Honey #089</button>
+                  <button class="btn-gold" style="background:rgba(255,255,255,0.18);color:#fff;" onclick="loadLabBatch('turmeric')">🟡 Lakadong Haldi #042</button>
+                </div>
+              </div>
+
+              <div class="lab-report-card" id="labReportBox">
+                <div class="lab-pass-banner">
+                  <span>✅ NABL LAB PASSED: 0 / 220 PESTICIDES</span>
+                  <span>PGS-IN-94821</span>
+                </div>
+                <div style="font-size:0.86rem;font-weight:800;color:var(--forest);" id="labBatchTitle">Khapli Emmer Wheat Atta — Batch #KHP-114</div>
+                <div style="font-size:0.72rem;color:var(--muted);margin-bottom:10px;" id="labBatchMeta">Farmer: Ramkishan Verma (23.204°N, 77.085°E) • FSSAI Jaivik Bharat Approved</div>
+                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;font-size:0.72rem;">
+                  <div style="background:var(--cream);padding:8px;border-radius:10px;"><strong>Harvested:</strong><br/><span id="labHarvest">29 Mar 2026</span></div>
+                  <div style="background:var(--cream);padding:8px;border-radius:10px;"><strong>Stone-Milled:</strong><br/><span id="labMilled">48 hrs before delivery</span></div>
+                  <div style="background:var(--cream);padding:8px;border-radius:10px;"><strong>Storage:</strong><br/><span id="labStorage">Hermetic Bag (No Fumigation)</span></div>
+                  <div style="background:var(--cream);padding:8px;border-radius:10px;"><strong>Purity Metric:</strong><br/><span id="labPurity">Protein 13.8% • Moisture 10.4%</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB 5: VISITS & GIFTING -->
+            <div id="fam-visits" class="fam-tab hidden">
+              <div class="app-header-row">
+                <div>
+                  <div class="greeting-small">Know Your Soil In Person</div>
+                  <div class="greeting-title">Farm Visits &amp; Gifts</div>
+                </div>
+              </div>
+
+              <div class="story-card">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                  <span class="tag-verified">Sunday Harvest Picnic</span>
+                  <span style="font-weight:800;color:var(--forest);font-size:0.85rem;">₹1,800 / person</span>
+                </div>
+                <div style="font-family:var(--serif);font-size:1.05rem;font-weight:700;margin-bottom:4px;">Jaggery Making &amp; Chakki Day</div>
+                <div class="story-body">Spend Sunday with your adopted farmer cluster. Kids feed desi cows, extract fresh sugarcane juice, grind wheat on stone chakkis, and eat a farm-cooked meal.</div>
+                <button class="btn-add" style="width:100%;padding:9px;" onclick="toast('2 Seats reserved for Sunday Farm Picnic!')">Reserve Sunday Family Pass</button>
+              </div>
+
+              <div class="story-card">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                  <span class="tag-transition">Festival &amp; Corporate Hamper</span>
+                  <span style="font-weight:800;color:var(--forest);font-size:0.85rem;">₹2,450 / box</span>
+                </div>
+                <div style="font-family:var(--serif);font-size:1.05rem;font-weight:700;margin-bottom:4px;">"A Harvest From Your Farmer" Box</div>
+                <div class="story-body">500ml A2 Bilona Ghee, Raw Mustard Honey, Lakadong Turmeric, Jaggery Drops &amp; a printed QR card introducing the exact farmer who grew it.</div>
+                <button class="btn-add" style="width:100%;padding:9px;background:var(--terracotta);" onclick="toast('Gift Hamper added with custom QR card!')">Send Gift Hamper</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== FARMER APP ==================== -->
+          <div id="farmerAppViewport" class="app-scroll hidden">
+            <div class="app-header-row">
+              <div>
+                <div class="greeting-small" id="fLocText">📍 Sehore Cluster • Certified PGS</div>
+                <div class="greeting-title" id="fNameText">Ramkishan Verma</div>
+              </div>
+              <button class="btn-add" style="background:var(--terracotta);" onclick="toggleFarmerLang()" id="langToggleBtn">हिन्दी / EN</button>
+            </div>
+
+            <div class="farmer-hero">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                <div>
+                  <div style="font-size:0.7rem;opacity:0.88;font-weight:700;" id="fWalletLabel">48-HR INSTANT WALLET</div>
+                  <div style="font-family:var(--serif);font-size:1.7rem;font-weight:700;">₹42,800</div>
+                </div>
+                <button class="btn-gold" onclick="toast('Instant UPI Payout initiated to Bank A/C **4821!')" id="fWithdrawBtn">Withdraw Now</button>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:0.72rem;background:rgba(0,0,0,0.18);padding:8px 10px;border-radius:10px;">
+                <span id="fContractSum">Active Contracts: <strong>₹1,85,000</strong></span>
+                <span id="fKhalCredit">🐄 Free Khal Credit: <strong>180 kg</strong></span>
+              </div>
+            </div>
+
+            <div class="big-action-grid">
+              <button class="big-farmer-btn" onclick="toast('Camera opened: Geo-tagged Farm Photo logged!')">
+                <span class="ico">📸</span>
+                <span class="lbl" id="fb1">Log Crop Photo</span>
+                <span class="sub" id="fbs1">Auto GPS + Timestamp</span>
+              </button>
+              <button class="big-farmer-btn" onclick="simulateVoiceRecord()">
+                <span class="ico">🎙️</span>
+                <span class="lbl" id="fb2">Voice Update</span>
+                <span class="sub" id="fbs2">Speak in Hindi / Local</span>
+              </button>
+              <button class="big-farmer-btn" onclick="toast('Agronomist visit scheduled for tomorrow 9 AM!')">
+                <span class="ico">🧪</span>
+                <span class="lbl" id="fb3">Lab &amp; Bee Check</span>
+                <span class="sub" id="fbs3">Request field team</span>
+              </button>
+              <button class="big-farmer-btn" onclick="toast('Ordered: 50 Hermetic Bags + Desi Seed Kit!')">
+                <span class="ico">🌱</span>
+                <span class="lbl" id="fb4">Desi Input Shop</span>
+                <span class="sub" id="fbs4">Seeds, Khal &amp; Bags</span>
+              </button>
+            </div>
+
+            <div class="sec-head">
+              <div class="sec-title" id="fContractHead">New Family Pooled Contracts</div>
+            </div>
+
+            <div class="story-card">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                <span class="tag-verified">140 Families Pooled</span>
+                <span style="font-size:0.78rem;font-weight:800;color:var(--emerald);">+28% Above Mandi</span>
+              </div>
+              <div style="font-size:0.9rem;font-weight:800;margin-bottom:4px;" id="fc1Title">Rabi Contract: Khapli Wheat (42 Quintals)</div>
+              <div class="story-body" id="fc1Desc">Guaranteed Rate: <strong>₹5,400 / Quintal</strong> • 30% Seed Advance (₹68,040) paid immediately upon acceptance. Zero middlemen.</div>
+              <button class="btn-add" style="width:100%;padding:10px;font-size:0.8rem;" id="fc1Btn" onclick="acceptFarmerContract(this)">✅ Accept Contract &amp; Receive 30% Advance</button>
+            </div>
+
+            <div class="story-card">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                <span class="tag-transition">Zaid Summer Crop</span>
+                <span style="font-size:0.78rem;font-weight:800;color:var(--emerald);">65-Day Crop</span>
+              </div>
+              <div style="font-size:0.9rem;font-weight:800;margin-bottom:4px;" id="fc2Title">Zaid Contract: Summer Moong + Til (15 Quintals)</div>
+              <div class="story-body" id="fc2Desc">Fixes natural nitrogen for next season + oilcake (Khal) stays on your farm for desi cows.</div>
+              <button class="btn-add" style="width:100%;padding:10px;font-size:0.8rem;background:var(--terracotta);" id="fc2Btn" onclick="acceptFarmerContract(this)">✅ Accept Zaid Contract</button>
+            </div>
+          </div>
+
+          <!-- ==================== BOTTOM NAV (MOBILE) ==================== -->
+          <nav class="bottom-nav" id="familyBottomNav">
+            <button class="nav-item active" onclick="switchFamTab('home', this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1v-9.5Z"/></svg>
+              My Harvest
+            </button>
+            <button class="nav-item" onclick="switchFamTab('pantry', this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+              Crops
+            </button>
+            <button class="nav-item" onclick="switchFamTab('farmer', this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 12 0v1"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg>
+              My Farmer
+            </button>
+            <button class="nav-item" onclick="switchFamTab('qr', this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM17 17h4v4h-4z"/></svg>
+              QR Lab
+            </button>
+            <button class="nav-item" onclick="switchFamTab('visits', this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12v10H4V12"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/></svg>
+              Visits
+            </button>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: FEATURE SPOTLIGHT & DEVELOPER BLUEPRINT -->
+    <section class="spotlight-panel" id="spotlightPanel">
+      <div class="spot-kicker">✨ WORLD-CLASS PRODUCT ARCHITECTURE • CROPS-ONLY MODEL</div>
+      <h1 class="spot-title">Built to Solve Trust, Unit Economics &amp; Seasonality in One System</h1>
+      <p class="spot-desc">
+        Interact with the live mobile prototype on the left—or click any signature innovation below to jump directly to it inside the app. Every screen is engineered around <strong>zero perishable vegetables</strong>, <strong>pan-India origin sourcing</strong>, and <strong>fresh-on-demand stone milling &amp; wood pressing</strong>.
+      </p>
+
+      <div class="feature-cards-grid">
+        <div class="f-card" onclick="switchApp('family'); switchFamTab('home')">
+          <div class="f-card-top"><div class="f-ico">🏦</div><h4>1. Family Grain Bank Vault</h4></div>
+          <p>Families lock in annual Rabi/Kharif/Zaid crop quotas in hermetic storage and summon <strong>48-hour freshly stone-milled atta &amp; pressed oil</strong> every month.</p>
+        </div>
+
+        <div class="f-card" onclick="switchApp('family'); switchFamTab('home'); openProof('bee')">
+          <div class="f-card-top"><div class="f-ico">🐝</div><h4>2. Living Proof Anti-Fraud</h4></div>
+          <p>Photos alone can be faked. Active farm <strong>bee hives</strong> (bees die on chemical spray) + <strong>NABL 220-pesticide lab PDFs</strong> make purity scientifically verifiable.</p>
+        </div>
+
+        <div class="f-card" onclick="switchApp('family'); switchFamTab('pantry')">
+          <div class="f-card-top"><div class="f-ico">🌾</div><h4>3. 5-Season Crop Engine</h4></div>
+          <p>Covers <strong>Rabi, Kharif, Zaid (Summer), Annual (Jaggery/Haldi) &amp; Orchards/Allied (A2 Ghee &amp; Honey)</strong>—eliminating off-season revenue dips.</p>
+        </div>
+
+        <div class="f-card" onclick="switchApp('family'); switchFamTab('qr')">
+          <div class="f-card-top"><div class="f-ico">🔬</div><h4>4. Batch QR Passport</h4></div>
+          <p>One scan reveals exact farm GPS coordinates, harvest-to-mill hours, hermetic seal ID, PGS-India/Jaivik Bharat compliance, and full lab test scores.</p>
+        </div>
+
+        <div class="f-card" onclick="switchApp('farmer')">
+          <div class="f-card-top"><div class="f-ico">🎙️</div><h4>5. Voice-First Kisan Saathi</h4></div>
+          <p>Simple Hindi + English toggle, giant visual buttons, <strong>30% pre-sowing advances</strong>, 48-hr payouts, and circular <strong>oilcake (Khal)</strong> cattle-feed credits.</p>
+        </div>
+
+        <div class="f-card" onclick="switchApp('admin')">
+          <div class="f-card-top"><div class="f-ico">⚡</div><h4>6. Real-Time Admin &amp; Economics</h4></div>
+          <p>Includes yield-cap anti-adulteration alerts, NABL batch gates, B2B surplus routing, and a live <strong>Unit Economics Simulator</strong> (click to open!). </p>
+        </div>
+      </div>
+
+      <div style="background:linear-gradient(135deg,#142c1f,#214832);color:#fff;border-radius:18px;padding:18px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;">
+        <div>
+          <div style="font-size:0.72rem;color:var(--gold);font-weight:700;text-transform:uppercase;">Why This Beats Vegetable Models</div>
+          <div style="font-family:var(--serif);font-size:1.12rem;font-weight:700;margin-top:2px;">~₹1,700 Net Profit / Family / Month • Break-even at ~300 Families</div>
+          <div style="font-size:0.76rem;opacity:0.82;margin-top:2px;">1× Monthly Gated-Society Drop • &lt;2% Shrinkage • Zero Cold Chain</div>
+        </div>
+        <button class="btn-gold" style="padding:10px 16px;font-size:0.82rem;" onclick="switchApp('admin')">Open Live Economics Simulator →</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==================== ADMIN CONTROL TOWER (FULL WIDTH) ==================== -->
+  <section id="adminStage" class="admin-dashboard hidden">
+    <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px;">
+      <div>
+        <div class="spot-kicker">⚡ ADMIN COMMAND TOWER • LIVE OPERATIONS &amp; FINANCIAL ENGINE</div>
+        <h2 style="font-family:var(--serif);font-size:1.7rem;color:var(--forest);">Demand Pooling, Anti-Fraud &amp; Unit Economics</h2>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-add" onclick="toast('Exported Monthly P&L + PGS Compliance Pack!')">📥 Export Investor Report</button>
+      </div>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-label">Active Subscribed Families</div>
+        <div class="kpi-val" id="admFamCount">1,240</div>
+        <div class="kpi-delta">↑ 18% MoM • 11 Gated Societies</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Verified Natural Farmers</div>
+        <div class="kpi-val">68</div>
+        <div class="kpi-delta">412 Acres (Certified + Transition)</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Hermetic Grain Bank Stock</div>
+        <div class="kpi-val">42.8 T</div>
+        <div class="kpi-delta">0.8% Shrinkage (Zero Chemical)</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">NABL Lab Pass Rate</div>
+        <div class="kpi-val">99.4%</div>
+        <div class="kpi-delta">2 Lots Quarantined Before Packing</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Monthly Platform EBITDA</div>
+        <div class="kpi-val" id="admEbitdaTop">₹16.4 L</div>
+        <div class="kpi-delta" id="admBreakevenBadge">Break-even: 294 Families</div>
+      </div>
+    </div>
+
+    <div class="admin-cols">
+      <!-- LEFT: LIVE UNIT ECONOMICS SIMULATOR -->
+      <div class="panel-box">
+        <h3 style="font-family:var(--serif);font-size:1.2rem;color:var(--forest);margin-bottom:4px;">Live Unit Economics Simulator (Crops Model)</h3>
+        <p style="font-size:0.78rem;color:var(--muted);margin-bottom:16px;">Drag sliders to stress-test your city profitability &amp; break-even point.</p>
+
+        <div class="slider-group">
+          <div class="slider-head"><span>Active Families in City</span><span id="valFam">1,240</span></div>
+          <input type="range" min="100" max="4000" step="20" value="1240" id="slFam" oninput="recalcEcon()" />
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-head"><span>Monthly Pantry Spend (ARPU ₹)</span><span id="valArpu">₹6,500</span></div>
+          <input type="range" min="4000" max="11000" step="250" value="6500" id="slArpu" oninput="recalcEcon()" />
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-head"><span>Blended Margin % (Incl. Milling/Ghee)</span><span id="valMargin">35%</span></div>
+          <input type="range" min="20" max="45" step="1" value="35" id="slMargin" oninput="recalcEcon()" />
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-head"><span>Gated Society Bulk Drop %</span><span id="valDrop">80%</span></div>
+          <input type="range" min="0" max="100" step="5" value="80" id="slDrop" oninput="recalcEcon()" />
+        </div>
+
+        <div class="econ-result-grid">
+          <div class="econ-tile">
+            <div style="font-size:0.7rem;color:var(--muted);font-weight:700;">MONTHLY GMV</div>
+            <div style="font-size:1.25rem;font-weight:800;color:var(--forest);" id="outGmv">₹80.6 L</div>
+          </div>
+          <div class="econ-tile">
+            <div style="font-size:0.7rem;color:var(--muted);font-weight:700;">NET CONTRIBUTION / FAMILY</div>
+            <div style="font-size:1.25rem;font-weight:800;color:var(--emerald);" id="outPerFam">₹1,705</div>
+          </div>
+          <div class="econ-tile">
+            <div style="font-size:0.7rem;color:var(--muted);font-weight:700;">BREAK-EVEN FAMILIES</div>
+            <div style="font-size:1.25rem;font-weight:800;color:var(--terracotta);" id="outBreak">294</div>
+          </div>
+          <div class="econ-tile profit">
+            <div style="font-size:0.7rem;opacity:0.8;font-weight:700;">MONTHLY NET EBITDA</div>
+            <div style="font-size:1.25rem;font-weight:800;color:var(--gold);" id="outEbitda">₹16.1 L</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: DEMAND VS SUPPLY + ANTI-FRAUD QUEUE -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div class="panel-box">
+          <h3 style="font-family:var(--serif);font-size:1.12rem;color:var(--forest);margin-bottom:10px;">5-Season Demand vs. Supply &amp; B2B Surplus</h3>
+          <table class="table-clean">
+            <thead>
+              <tr><th>Crop / Season</th><th>Family Demand</th><th>Contracted</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Khapli Wheat</strong><br/><span style="font-size:0.68rem;color:var(--muted);">Rabi • MP</span></td>
+                <td>22.0 T</td>
+                <td>24.5 T</td>
+                <td><span class="tag-verified">Balanced</span></td>
+              </tr>
+              <tr>
+                <td><strong>Summer Moong</strong><br/><span style="font-size:0.68rem;color:var(--muted);">Zaid • RJ</span></td>
+                <td>6.4 T</td>
+                <td>5.0 T</td>
+                <td><button class="btn-add" style="padding:4px 8px;font-size:0.66rem;" onclick="toast('Matched 1.4T Zaid gap with 3 Alwar farmers!')">+ Match 3 Farms</button></td>
+              </tr>
+              <tr>
+                <td><strong>Lakadong Haldi</strong><br/><span style="font-size:0.68rem;color:var(--muted);">Annual • ML</span></td>
+                <td>1.8 T</td>
+                <td>3.6 T</td>
+                <td><button class="btn-gold" style="padding:4px 8px;font-size:0.66rem;" onclick="toast('Routed 1.8T surplus to B2B Baby Food brand @ 27% margin!')">Route B2B (1.8T)</button></td>
+              </tr>
+              <tr>
+                <td><strong>A2 Bilona Ghee</strong><br/><span style="font-size:0.68rem;color:var(--muted);">Allied • Year-round</span></td>
+                <td>1.5 T</td>
+                <td>1.6 T</td>
+                <td><span class="tag-verified">Optimal</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="panel-box">
+          <h3 style="font-family:var(--serif);font-size:1.12rem;color:var(--forest);margin-bottom:10px;">Anti-Fraud &amp; NABL Lot Gate</h3>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:#fff4f0;border:1px solid #f2c2b2;border-radius:12px;margin-bottom:8px;">
+            <div>
+              <div style="font-size:0.8rem;font-weight:800;color:#9b2c13;">⚠ Yield Cap Alert: Farmer #44 (Alwar)</div>
+              <div style="font-size:0.7rem;color:var(--muted);">2-acre mustard plot max yield = 18 Qtl. Attempted delivery: 29 Qtl.</div>
+            </div>
+            <button class="btn-add" style="background:#b83416;" onclick="toast('Lot #44 Frozen for Field Audit &amp; Lab Re-test!')">Hold Lot</button>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:var(--emerald-soft);border-radius:12px;" id="nablPendingRow">
+            <div>
+              <div style="font-size:0.8rem;font-weight:800;color:var(--forest);">🧪 NABL Clear: Lot #HNY-089 (Mustard Honey)</div>
+              <div style="font-size:0.7rem;color:var(--muted);">0/220 Pesticides • 18.2% Moisture • Ready for QR Publish</div>
+            </div>
+            <button class="btn-add" onclick="approveLot(this)">Approve &amp; Pay 48h</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- MODAL BACKDROP -->
+<div class="modal-backdrop" id="modalBackdrop" onclick="closeModal(event)">
+  <div class="modal-card" id="modalContent" onclick="event.stopPropagation()"></div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toastEl">Action completed</div>
+
+<script>
+  // ==================== DATA ====================
+  const CROPS = [
+    { id: 1, name: "Khapli (Emmer) Wheat Atta", farmer: "Ramkishan • Sehore, MP", season: "Rabi", tier: "Certified PGS", badge: "Stone-Milled 48h Fresh", price: 115, unit: "kg", qty: 5, icon: "🌾" },
+    { id: 2, name: "Kala Namak Heritage Rice", farmer: "Harish • Siddharthnagar", season: "Kharif", tier: "Certified PGS", badge: "Aged 12 Mo • Unpolished", price: 165, unit: "kg", qty: 2, icon: "🍚" },
+    { id: 3, name: "Kachi Ghani Mustard Oil", farmer: "Bhawani • Alwar, RJ", season: "Rabi", tier: "Certified PGS", badge: "Wood-Pressed • Zero Hexane", price: 320, unit: "L", qty: 2, icon: "🌻" },
+    { id: 4, name: "Zaid Summer Moong Dal", farmer: "Suresh • Bundi, RJ", season: "Zaid", tier: "Transition (-15%)", badge: "Unpolished • 65-Day Crop", price: 148, unit: "kg", qty: 0, icon: "🫘" },
+    { id: 5, name: "Wood-Pressed White Til Oil", farmer: "Kailash • Palanpur, GJ", season: "Zaid", tier: "Certified PGS", badge: "Cold-Pressed Fresh", price: 410, unit: "L", qty: 0, icon: "🥜" },
+    { id: 6, name: "Chemical-Free Jaggery Powder", farmer: "Vikas • Muzaffarnagar", season: "Orchard", tier: "Certified PGS", badge: "Annual Cane • Zero Sulphur", price: 110, unit: "kg", qty: 1, icon: "🍯" },
+    { id: 7, name: "Lakadong Haldi (7.5% Curcumin)", farmer: "Wansalan • Meghalaya", season: "Orchard", tier: "Certified PGS", badge: "Single-Origin • Sun-Dried", price: 390, unit: "500g", qty: 0, icon: "🟡" },
+    { id: 8, name: "Mithila Makhana (Hand-Popped)", farmer: "Raghav • Darbhanga, BR", season: "Orchard", tier: "Transition (-15%)", badge: "Pond-Grown • Zero Bleach", price: 460, unit: "500g", qty: 0, icon: "⚪" },
+    { id: 9, name: "Gir Cow A2 Bilona Ghee", farmer: "Meera Devi • Anand, GJ", season: "Allied", tier: "Certified PGS", badge: "Curd-Churned • Khal-Fed", price: 1650, unit: "1L Glass", qty: 1, icon: "🧈" },
+    { id: 10, name: "Wild Mustard Raw Honey", farmer: "Bee Cluster #2 • Alwar", season: "Allied", tier: "Certified PGS", badge: "Live Zero-Spray Proof", price: 540, unit: "500g", qty: 0, icon: "🐝" }
+  ];
+
+  const LAB_BATCHES = {
+    wheat: {
+      title: "Khapli Emmer Wheat Atta — Batch #KHP-114",
+      meta: "Farmer: Ramkishan Verma (23.204°N, 77.085°E) • FSSAI Jaivik Bharat Approved",
+      harvest: "29 Mar 2026",
+      milled: "48 hrs before delivery",
+      storage: "Hermetic Bag (No Fumigation)",
+      purity: "Protein 13.8% • Moisture 10.4%"
+    },
+    honey: {
+      title: "Wild Mustard Raw Honey — Batch #HNY-089",
+      meta: "Cluster #2 (27.553°N, 76.634°E) • Live Bee Pollination Verified",
+      harvest: "14 Feb 2026",
+      milled: "Cold-Filtered (Never Heated)",
+      storage: "Food-Grade Glass Vat",
+      purity: "HMF <12 mg/kg • Zero Sugar Syrup"
+    },
+    turmeric: {
+      title: "Lakadong Turmeric Powder — Batch #TRM-042",
+      meta: "Farmer: Wansalan (25.467°N, 92.201°E) • PGS-India Certified",
+      harvest: "18 Jan 2026",
+      milled: "Slow Cold-Hammer Milled",
+      storage: "Amber Vacuum Pouch",
+      purity: "Curcumin 7.42% • Lead/Arsenic: ND"
+    }
+  };
+
+  let currentSeason = "all";
+  let farmerHindi = false;
+  let activeVoice = null;
+
+  // ==================== APP SWITCHING ====================
+  function switchApp(app, btn) {
+    document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    else {
+      const idx = app === 'family' ? 0 : app === 'farmer' ? 1 : 2;
+      document.querySelectorAll('.role-btn')[idx].classList.add('active');
+    }
+
+    const mobileStage = document.getElementById('mobileStage');
+    const adminStage = document.getElementById('adminStage');
+    const famView = document.getElementById('familyAppViewport');
+    const farmView = document.getElementById('farmerAppViewport');
+    const botNav = document.getElementById('familyBottomNav');
+
+    if (app === 'admin') {
+      mobileStage.classList.add('hidden');
+      adminStage.classList.remove('hidden');
+      recalcEcon();
+    } else {
+      adminStage.classList.add('hidden');
+      mobileStage.classList.remove('hidden');
+      if (app === 'family') {
+        famView.classList.remove('hidden');
+        farmView.classList.add('hidden');
+        botNav.classList.remove('hidden');
+      } else {
+        famView.classList.add('hidden');
+        farmView.classList.remove('hidden');
+        botNav.classList.add('hidden');
+      }
+    }
+  }
+
+  function switchFamTab(tabId, navBtn) {
+    document.querySelectorAll('.fam-tab').forEach(t => t.classList.add('hidden'));
+    document.getElementById('fam-' + tabId).classList.remove('hidden');
+    document.querySelectorAll('#familyBottomNav .nav-item').forEach(n => n.classList.remove('active'));
+    if (navBtn) {
+      navBtn.classList.add('active');
+    } else {
+      const map = { home: 0, pantry: 1, farmer: 2, qr: 3, visits: 4 };
+      document.querySelectorAll('#familyBottomNav .nav-item')[map[tabId]].classList.add('active');
+    }
+  }
+
+  function quickJumpQR() {
+    switchApp('family');
+    switchFamTab('qr');
+    toast('Scanning Batch #KHP-114 QR Passport...');
+  }
+
+  // ==================== PANTRY & CART ====================
+  function renderCrops() {
+    const container = document.getElementById('cropListContainer');
+    const list = currentSeason === 'all' ? CROPS : CROPS.filter(c => c.season === currentSeason);
+    container.innerHTML = list.map(c => `
+      <div class="product-card">
+        <div class="prod-art"><span style="font-size:1.8rem;">${c.icon}</span></div>
+        <div class="prod-info">
+          <div class="prod-title">${c.name}</div>
+          <div class="prod-origin">${c.farmer}</div>
+          <div class="prod-badges">
+            <span class="mini-pill">${c.season}</span>
+            <span class="mini-pill" style="background:${c.tier.includes('Transition') ? 'var(--gold-soft)' : 'var(--emerald-soft)'};color:${c.tier.includes('Transition') ? '#9b610a' : 'var(--emerald)'};">${c.tier}</span>
+            <span class="mini-pill">${c.badge}</span>
+          </div>
+          <div class="prod-bottom">
+            <div><span class="prod-price">₹${c.price}</span> <span class="prod-unit">/ ${c.unit}</span></div>
+            <div class="qty-ctrl">
+              ${c.qty === 0
+                ? `<button class="btn-add" onclick="updateQty(${c.id}, 1)">+ Reserve</button>`
+                : `<button class="btn-qty" onclick="updateQty(${c.id}, -1)">−</button>
+                   <span style="font-size:0.8rem;font-weight:800;min-width:16px;text-align:center;">${c.qty}</span>
+                   <button class="btn-qty" onclick="updateQty(${c.id}, 1)">+</button>`}
+            </div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+    updateCartSummary();
+  }
+
+  function filterCrops(season, el) {
+    currentSeason = season;
+    document.querySelectorAll('#seasonFilters .chip-filter').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    renderCrops();
+  }
+
+  function updateQty(id, delta) {
+    const item = CROPS.find(c => c.id === id);
+    if (!item) return;
+    item.qty = Math.max(0, item.qty + delta);
+    renderCrops();
+  }
+
+  function updateCartSummary() {
+    const active = CROPS.filter(c => c.qty > 0);
+    const total = active.reduce((acc, c) => acc + c.price * c.qty, 0);
+    const advance = Math.round(total * 0.30);
+    document.getElementById('cartSummaryTop').textContent = `${active.length} crops • Sunday Gated Drop (₹0 Fee)`;
+    document.getElementById('cartTotalText').textContent = `₹${total.toLocaleString('en-IN')} • 30% Advance: ₹${advance.toLocaleString('en-IN')}`;
+    document.getElementById('cartFloat').style.display = active.length ? 'flex' : 'none';
+  }
+
+  function openCheckout() {
+    const active = CROPS.filter(c => c.qty > 0);
+    const total = active.reduce((acc, c) => acc + c.price * c.qty, 0);
+    const adv = Math.round(total * 0.30);
+    openCustomModal(`
+      <div class="spot-kicker">🌾 HARVEST BOOKING SUMMARY</div>
+      <h3 style="font-family:var(--serif);font-size:1.35rem;color:var(--forest);margin-bottom:8px;">Confirm Your Crop Reservation</h3>
+      <p style="font-size:0.82rem;color:var(--muted);margin-bottom:12px;">Your 30% advance directly funds desi open-pollinated seeds &amp; natural inputs for your named farmers. Grains stay whole until 48h before your monthly delivery.</p>
+      <div style="background:#fff;border-radius:14px;padding:12px;border:1px solid var(--border);margin-bottom:14px;max-height:170px;overflow:auto;">
+        ${active.map(i => `<div style="display:flex;justify-content:space-between;font-size:0.8rem;padding:4px 0;"><span>${i.icon} ${i.name} × ${i.qty}</span><strong>₹${(i.price * i.qty).toLocaleString('en-IN')}</strong></div>`).join('')}
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:0.88rem;font-weight:800;margin-bottom:14px;">
+        <span>Pay Now (30% Advance):</span>
+        <span style="color:var(--terracotta);">₹${adv.toLocaleString('en-IN')}</span>
+      </div>
+      <button class="btn-add" style="width:100%;padding:12px;font-size:0.88rem;" onclick="closeModal();toast('Harvest Reserved! Farmers notified &amp; QR tracking activated.');">Pay ₹${adv.toLocaleString('en-IN')} via UPI Autopay</button>
+    `);
+  }
+
+  // ==================== LAB, PROOFS & VOICE ====================
+  function loadLabBatch(key) {
+    const b = LAB_BATCHES[key];
+    document.getElementById('labBatchTitle').textContent = b.title;
+    document.getElementById('labBatchMeta').textContent = b.meta;
+    document.getElementById('labHarvest').textContent = b.harvest;
+    document.getElementById('labMilled').textContent = b.milled;
+    document.getElementById('labStorage').textContent = b.storage;
+    document.getElementById('labPurity').textContent = b.purity;
+    toast('QR Decoded: ' + b.title);
+  }
+
+  function triggerFreshMill() {
+    openCustomModal(`
+      <div class="spot-kicker">⚙️ FRESH-ON-DEMAND PROCESSING</div>
+      <h3 style="font-family:var(--serif);font-size:1.3rem;color:var(--forest);margin-bottom:8px;">Customize This Sunday's Grind</h3>
+      <p style="font-size:0.82rem;color:var(--muted);margin-bottom:14px;">Your whole Khapli wheat &amp; mustard seeds are sitting safely in chemical-free hermetic storage. Choose how you want them processed 48 hours before delivery:</p>
+      <div style="display:grid;gap:10px;margin-bottom:16px;">
+        <label style="background:#fff;padding:11px;border-radius:12px;border:1px solid var(--border);font-size:0.82rem;display:flex;gap:8px;align-items:center;"><input type="radio" name="grind" checked/> <strong>Coarse Chakki Atta (Choker-Rich)</strong> — Slow cold stone-mill</label>
+        <label style="background:#fff;padding:11px;border-radius:12px;border:1px solid var(--border);font-size:0.82rem;display:flex;gap:8px;align-items:center;"><input type="radio" name="grind"/> <strong>Fine Chapati Atta</strong> — Double-sieved stone grind</label>
+        <label style="background:#fff;padding:11px;border-radius:12px;border:1px solid var(--border);font-size:0.82rem;display:flex;gap:8px;align-items:center;"><input type="radio" name="grind"/> <strong>Send Whole Unmilled Grains</strong> — Mill at home</label>
+      </div>
+      <button class="btn-add" style="width:100%;padding:11px;" onclick="closeModal();toast('Stone-Chakki ticket #M-402 queued for Friday 6 AM!')">Save Milling Preference</button>
+    `);
+  }
+
+  function openProof(type) {
+    const data = {
+      bee: { title: "🐝 Live Beehives = Biological Pesticide Proof", body: "Honeybees cannot survive synthetic neonicotinoids or organophosphates. Every certified farm cluster maintains 3–6 active bee boxes that pollinate mustard, moong, and orchards—and produce your raw mono-floral honey." },
+      lab: { title: "🧪 NABL Multi-Residue Lab Shield", body: "Photos can be staged, so every harvested lot is randomly sampled by our field agronomist and tested via GC-MS/LC-MS for 220 synthetic pesticides before leaving the hub. Families view the PDF straight from the QR code." },
+      cow: { title: "🐄 Circular Desi Cow & Khal Ecosystem", body: "We press oilseeds in wood ghanis and return the nutrient-dense mustard/groundnut oilcake (Khal) as feed for farmers' desi cows. Those cows yield A2 Bilona Ghee and Jeevamrit manure for the soil." }
+    }[type];
+    openCustomModal(`
+      <div class="spot-kicker">VERIFIED ANTI-FRAUD LAYER</div>
+      <h3 style="font-family:var(--serif);font-size:1.3rem;color:var(--forest);margin-bottom:8px;">${data.title}</h3>
+      <p style="font-size:0.86rem;color:var(--ink);line-height:1.55;margin-bottom:16px;">${data.body}</p>
+      <button class="btn-add" style="width:100%;padding:10px;" onclick="closeModal()">Got It</button>
+    `);
+  }
+
+  function toggleVoice(id, text) {
+    const el = document.getElementById(id);
+    const btn = el.querySelector('.play-circle');
+    if (el.classList.contains('playing')) {
+      el.classList.remove('playing');
+      btn.textContent = '▶';
+    } else {
+      el.classList.add('playing');
+      btn.textContent = '❚❚';
+      toast(text);
+      setTimeout(() => { el.classList.remove('playing'); btn.textContent = '▶'; }, 4200);
+    }
+  }
+
+  // ==================== FARMER APP LOGIC ====================
+  function toggleFarmerLang() {
+    farmerHindi = !farmerHindi;
+    document.getElementById('fLocText').textContent = farmerHindi ? "📍 सीहोर क्लस्टर • प्रमाणित PGS" : "📍 Sehore Cluster • Certified PGS";
+    document.getElementById('fNameText').textContent = farmerHindi ? "रामकिशन वर्मा" : "Ramkishan Verma";
+    document.getElementById('fWalletLabel').textContent = farmerHindi ? "48 घंटे में भुगतान वॉलेट" : "48-HR INSTANT WALLET";
+    document.getElementById('fWithdrawBtn').textContent = farmerHindi ? "पैसे निकालें" : "Withdraw Now";
+    document.getElementById('fContractSum').innerHTML = farmerHindi ? "सक्रिय अनुबंध: <strong>₹1,85,000</strong>" : "Active Contracts: <strong>₹1,85,000</strong>";
+    document.getElementById('fKhalCredit').innerHTML = farmerHindi ? "🐄 मुफ्त खली क्रेडिट: <strong>180 kg</strong>" : "🐄 Free Khal Credit: <strong>180 kg</strong>";
+    document.getElementById('fb1').textContent = farmerHindi ? "फसल फोटो डालें" : "Log Crop Photo";
+    document.getElementById('fbs1').textContent = farmerHindi ? "लोकेशन अपने आप जुड़ेगी" : "Auto GPS + Timestamp";
+    document.getElementById('fb2').textContent = farmerHindi ? "बोलकर बताएं" : "Voice Update";
+    document.getElementById('fbs2').textContent = farmerHindi ? "आसान हिंदी में रिकॉर्ड करें" : "Speak in Hindi / Local";
+    document.getElementById('fb3').textContent = farmerHindi ? "लैब / मधुमक्खी जांच" : "Lab & Bee Check";
+    document.getElementById('fbs3').textContent = farmerHindi ? "टीम को खेत पर बुलाएं" : "Request field team";
+    document.getElementById('fb4').textContent = farmerHindi ? "देसी बीज व खाद दुकान" : "Desi Input Shop";
+    document.getElementById('fbs4').textContent = farmerHindi ? "बीज, खली और बैग" : "Seeds, Khal & Bags";
+    document.getElementById('fContractHead').textContent = farmerHindi ? "परिवारों के नए पक्के ऑर्डर" : "New Family Pooled Contracts";
+    document.getElementById('fc1Title').textContent = farmerHindi ? "रबी ऑर्डर: खपली गेहूं (42 क्विंटल)" : "Rabi Contract: Khapli Wheat (42 Quintals)";
+    document.getElementById('fc1Desc').innerHTML = farmerHindi ? "पक्का भाव: <strong>₹5,400 / क्विंटल</strong> • हाँ करते ही 30% एडवांस (₹68,040) तुरंत खाते में।" : "Guaranteed Rate: <strong>₹5,400 / Quintal</strong> • 30% Seed Advance (₹68,040) paid immediately upon acceptance. Zero middlemen.";
+    toast(farmerHindi ? "भाषा बदलकर सरल हिन्दी कर दी गई है!" : "Switched Farmer App to English");
+  }
+
+  function simulateVoiceRecord() {
+    toast(farmerHindi ? "🎙️ रिकॉर्डिंग चालू: 'आज जीवामृत का छिड़काव किया'..." : "🎙️ Recording Voice Note: 'Applied Jeevamrit on Plot A4 today'...");
+  }
+
+  function acceptFarmerContract(btn) {
+    btn.textContent = farmerHindi ? "🎉 अनुबंध पक्का! 30% एडवांस भेजा गया" : "🎉 Accepted! 30% Advance Credited";
+    btn.style.background = "var(--emerald)";
+    btn.disabled = true;
+    toast("Contract locked! 30% Seed Advance transferred to farmer UPI.");
+  }
+
+  // ==================== ADMIN UNIT ECONOMICS ====================
+  function recalcEcon() {
+    const fam = +document.getElementById('slFam').value;
+    const arpu = +document.getElementById('slArpu').value;
+    const marginPct = +document.getElementById('slMargin').value / 100;
+    const dropPct = +document.getElementById('slDrop').value / 100;
+
+    document.getElementById('valFam').textContent = fam.toLocaleString('en-IN');
+    document.getElementById('valArpu').textContent = '₹' + arpu.toLocaleString('en-IN');
+    document.getElementById('valMargin').textContent = Math.round(marginPct * 100) + '%';
+    document.getElementById('valDrop').textContent = Math.round(dropPct * 100) + '%';
+
+    const grossPerFam = arpu * marginPct;
+    const deliveryPerFam = (dropPct * 120) + ((1 - dropPct) * 340); // Bulk society drop vs door-to-door
+    const millingPackPerFam = arpu * 0.04;
+    const labShrinkPerFam = arpu * 0.023;
+
+    const netPerFam = Math.round(grossPerFam - deliveryPerFam - millingPackPerFam - labShrinkPerFam);
+    const fixedOverhead = 500000; // ₹5L/month city hub + agronomists + tech/ops
+    const gmv = fam * arpu;
+    const ebitda = (fam * netPerFam) - fixedOverhead;
+    const breakeven = netPerFam > 0 ? Math.ceil(fixedOverhead / netPerFam) : 'N/A';
+
+    document.getElementById('outGmv').textContent = '₹' + (gmv / 100000).toFixed(1) + ' L';
+    document.getElementById('outPerFam').textContent = '₹' + netPerFam.toLocaleString('en-IN');
+    document.getElementById('outBreak').textContent = breakeven;
+    document.getElementById('outEbitda').textContent = (ebitda >= 0 ? '₹' : '-₹') + (Math.abs(ebitda) / 100000).toFixed(1) + ' L';
+
+    document.getElementById('admFamCount').textContent = fam.toLocaleString('en-IN');
+    document.getElementById('admEbitdaTop').textContent = (ebitda >= 0 ? '₹' : '-₹') + (Math.abs(ebitda) / 100000).toFixed(1) + ' L';
+    document.getElementById('admBreakevenBadge').textContent = `Break-even: ${breakeven} Families`;
+  }
+
+  function approveLot(btn) {
+    btn.textContent = "✅ QR Published & Paid";
+    btn.style.background = "var(--emerald)";
+    btn.disabled = true;
+    toast("NABL Certificate published to Family QR & 48h Farmer Payout triggered!");
+  }
+
+  // ==================== MODALS & TOAST ====================
+  function openModal(id) {
+    if (id === 'archModal') {
+      openCustomModal(`
+        <div class="spot-kicker">📐 DEVELOPER HOMEWORK &amp; STACK</div>
+        <h3 style="font-family:var(--serif);font-size:1.35rem;color:var(--forest);margin-bottom:8px;">Production Architecture Blueprint</h3>
+        <p style="font-size:0.8rem;color:var(--muted);line-height:1.5;margin-bottom:12px;">
+          Designed for India's real field conditions (offline-capable farmer app + high-craft urban consumer app):
+        </p>
+        <ul style="font-size:0.78rem;line-height:1.65;padding-left:18px;color:var(--ink);margin-bottom:14px;">
+          <li><strong>Family App:</strong> React Native / Flutter + UPI Autopay (Razorpay Subscriptions) + Interactive Grain Bank Ledger.</li>
+          <li><strong>Farmer App:</strong> Offline-first SQLite sync, Bhashini AI Hindi/regional voice-to-text, low-bandwidth photo compression + GPS watermark.</li>
+          <li><strong>Traceability Engine:</strong> Immutable Batch IDs linking Plot GPS → Yield Cap → NABL Lab PDF → Stone-Milling Timestamp → QR Code.</li>
+          <li><strong>Regulatory Guardrails:</strong> PGS-India Group IDs + FSSAI Jaivik Bharat label rules; Transition lots auto-tagged "Zero-Chemical Transition".</li>
+        </ul>
+        <button class="btn-add" style="width:100%;padding:10px;" onclick="closeModal()">Back to Interactive Prototype</button>
+      `);
+    }
+  }
+
+  function openCustomModal(html) {
+    document.getElementById('modalContent').innerHTML = html;
+    document.getElementById('modalBackdrop').classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('modalBackdrop').classList.remove('open');
+  }
+
+  let toastTimer;
+  function toast(msg) {
+    const el = document.getElementById('toastEl');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+  }
+
+  // Initialize
+  renderCrops();
+  recalcEcon();
+</script>
+</body>
+</html>
